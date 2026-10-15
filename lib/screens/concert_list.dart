@@ -4,6 +4,7 @@ import '../db.dart';
 import '../main.dart';
 import '../theme.dart';
 import 'tickets.dart';
+import 'transfer_screens.dart';
 
 class ConcertListScreen extends StatefulWidget {
   const ConcertListScreen({super.key});
@@ -36,7 +37,17 @@ class _ConcertListScreenState extends State<ConcertListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Koncerty')),
+      appBar: AppBar(title: const Text('Koncerty'), actions: [
+        IconButton(
+          tooltip: 'Odbierz koncert',
+          icon: const Icon(Icons.qr_code_scanner),
+          onPressed: () async {
+            if (await Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceiveScreen())) == true) {
+              _reload();
+            }
+          },
+        ),
+      ]),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -57,7 +68,7 @@ class _ConcertListScreenState extends State<ConcertListScreen> {
                 children: [
                   Text('Nie masz jeszcze koncertów', style: Theme.of(context).textTheme.headlineSmall),
                   const SizedBox(height: 8),
-                  Text('Dodaj koncert, a potem zaimportuj do niego listę biletów.',
+                  Text('Dodaj koncert, a potem zaimportuj do niego listę biletów — albo odbierz go z innego telefonu.',
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(color: Palette.mgla)),
                 ],
               ),
