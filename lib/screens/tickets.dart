@@ -6,6 +6,7 @@ import '../import_parser.dart';
 import '../main.dart';
 import '../theme.dart';
 import 'scanner.dart';
+import 'transfer_screens.dart';
 
 class TicketsScreen extends StatefulWidget {
   final int concertId;
@@ -54,43 +55,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     if (concert.total > 0) {
       final s = await db.importSummary(concert.id, codes);
       if (!mounted) return;
-      final choice = await showDialog<bool>(
-        context: context,
-        builder: (c) => AlertDialog(
-          title: const Text('Koncert ma już bilety'),
-          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            for (final (label, n) in [
-              ('Kodów w pliku', codes.length),
-              ('Nowych', s.newCodes),
-              ('Już na liście', s.alreadyPresent),
-            ])
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(children: [
-                  Expanded(child: Text(label)),
-                  Text('$n', style: archivo(16, 700).copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
-                ]),
-              ),
-            const SizedBox(height: 16),
-            Text('Połącz dopisze tylko nowe kody. Statusy biletów zostaną bez zmian.',
-                style: Theme.of(c).textTheme.bodyMedium),
-            const SizedBox(height: 8),
-            Text(
-                'Zastąp wszystko usunie obecną listę'
-                '${s.scannedExisting > 0 ? ', w tym ${s.scannedExisting} zeskanowanych biletów' : ''}.',
-                style: Theme.of(c).textTheme.bodyMedium),
-          ]),
-          actionsOverflowButtonSpacing: 4,
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(c), child: const Text('Anuluj')),
-            TextButton(
-                style: TextButton.styleFrom(foregroundColor: Palette.stop),
-                onPressed: () => Navigator.pop(c, true),
-                child: const Text('Zastąp wszystko')),
-            FilledButton(onPressed: () => Navigator.pop(c, false), child: const Text('Połącz')),
-          ],
-        ),
-      );
+      final choice = await askJoinOrReplace(context, codes.length, s);
       if (choice == null) return;
       replace = choice;
     }
@@ -189,6 +154,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
                         icon: const Icon(Icons.search),
                         onPressed: () => setState(() => _searching = true),
                       ),
+              if (!empty && !_searching)
+                IconButton(
+                    onPressed: () =>
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => SendScreen(concertId: concert.id))),
+                    icon: const Icon(Icons.qr_code_2),
+                    tooltip: 'Wyślij koncert'),
               if (!empty)
                 IconButton(
                     onPressed: () => _import(concert),
@@ -274,6 +245,53 @@ class _TicketsScreenState extends State<TicketsScreen> {
       },
     );
   }
+}
+
+/// Join (false) or Replace (true) for importing [incoming] codes into a concert
+/// that already has tickets; null if cancelled.
+Future<bool?> askJoinOrReplace(BuildContext context, int incoming, ImportSummary s, {bool transfer = false}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (c) => AlertDialog(
+      title: const Text('Koncert ma już bilety'),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        for (final (label, n) in [
+          (transfer ? 'Biletów w przesyłce' : 'Kodów w pliku', incoming),
+          ('Nowych', s.newCodes),
+          ('Już na liście', s.alreadyPresent),
+        ])
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3),
+            child: Row(children: [
+              Expanded(child: Text(label)),
+              Text('$n', style: archivo(16, 700).copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+            ]),
+          ),
+        const SizedBox(height: 16),
+        Text(
+          transfer
+              ? 'Połącz dopisze nowe kody, a bilety zeskanowane na drugim telefonie oznaczy jako zeskanowane. '
+                  'Żaden skan nie zostanie cofnięty.'
+              : 'Połącz dopisze tylko nowe kody. Statusy biletów zostaną bez zmian.',
+            style: Theme.of(c).textTheme.bodyMedium),
+        const SizedBox(height: 8),
+        Text(
+            'Zastąp wszystko usunie obecną listę'
+            '${s.scannedExisting > 0 ? ', w tym ${s.scannedExisting} zeskanowanych biletów' : ''}'
+            '${transfer ? ' i przyjmie bilety, statusy i datę z drugiego telefonu' : ''}.',
+            style: Theme.of(c).textTheme.bodyMedium),
+      ]),
+      actionsOverflowButtonSpacing: 4,
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(c), child: const Text('Anuluj')),
+        TextButton(
+            style: TextButton.styleFrom(foregroundColor: Palette.stop),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Zastąp wszystko')),
+        FilledButton(onPressed: () => Navigator.pop(c, false), child: const Text('Połącz')),
+      ],
+    ),
+  );
 }
 
 /// Filter tab with its count; the dot matches the progress bar's colours.

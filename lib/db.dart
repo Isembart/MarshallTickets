@@ -113,6 +113,33 @@ class Db {
         await batch.commit(noResult: true);
       });
 
+  /// Import of a Transfer. replace: the concert takes the sender's tickets,
+  /// statuses, name and date. Join: new codes are added, and a ticket scanned on
+  /// either side ends up scanned at the earlier time; nothing is un-scanned.
+  Future<void> importTransfer(int concertId, String name, DateTime? date, List<Ticket> tickets, {required bool replace}) =>
+      _db.transaction((tx) async {
+        if (replace) {
+          await tx.delete('tickets', where: 'concert_id = ?', whereArgs: [concertId]);
+          await tx.update('concerts', {'name': name, 'date': date?.toIso8601String()}, where: 'id = ?', whereArgs: [concertId]);
+        }
+        final existing = {
+          for (final r in await tx.query('tickets', where: 'concert_id = ?', whereArgs: [concertId]))
+            r['code'] as String: _date(r['scanned_at'])
+        };
+        final batch = tx.batch();
+        for (final t in tickets) {
+          final at = t.scannedAt?.toIso8601String();
+          if (!existing.containsKey(t.code)) {
+            batch.insert('tickets', {'concert_id': concertId, 'code': t.code, 'scanned_at': at},
+                conflictAlgorithm: ConflictAlgorithm.ignore);
+          } else if (t.scannedAt != null && (existing[t.code] == null || t.scannedAt!.isBefore(existing[t.code]!))) {
+            batch.update('tickets', {'scanned_at': at},
+                where: 'concert_id = ? AND code = ?', whereArgs: [concertId, t.code]);
+          }
+        }
+        await batch.commit(noResult: true);
+      });
+
   // Scan
 
   Future<ScanResult> scan(int concertId, String rawCode) async {

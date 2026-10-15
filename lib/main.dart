@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'db.dart';
 import 'screens/concert_list.dart';
@@ -8,6 +11,11 @@ late final Db db;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isLinux) {
+    // sqflite has no Linux plugin; the FFI factory uses the system libsqlite3.
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
   db = await Db.open();
   runApp(MaterialApp(
     title: 'Bilety',
