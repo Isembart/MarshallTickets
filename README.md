@@ -12,7 +12,7 @@ Dodatkowo, mało która aplikacja wspiera kody zawierające link do strony jak j
 
 W aplikacji tworzymy wydarzenie z datą i nazwą. Data jest używana wyłącznie do sortowania wydarzeń na liście. Wydarzenia z dzisiaj, lub z obecnego weekendu są wyświetlane wygodnie na górze listy.
 
-![Screenshot](./.github/images/newGig.jpg)
+<img src="./.github/images/newGig.jpg" alt="Screenshot" height="500">
 
 Do wydarzenia można zaimportować listę kupionych biletów w formacie `.txt` (jeden kod na linię) lub `.csv`. Następnie można zeskanować kody QR lub kody kreskowe (EAN-13/8, UPC-A, Code128, Code39) przy wejściu na koncert. Aplikacja sprawdza, czy kod jest ważny i czy został już zeskanowany. Wyniki są wyświetlane w czasie rzeczywistym.
 
@@ -27,7 +27,7 @@ https://sklep.mójzespół.pl/?event_qr_code=1&ticket_id=86101&event_id=7041&sec
 
 Poprawny Bilet           |  Niepoprawny Bilet 
 :-------------------------:|:-------------------------:
-![](./.github/images/entry.jpg)  |  ![](./.github/images/noEntry.jpg)
+<img src="./.github/images/entry.jpg" alt="" height="500">  |  <img src="./.github/images/noEntry.jpg" alt="" height="500">
 
 # Importowanie koncertu z kodu QR
 
@@ -42,7 +42,7 @@ Wszelkie zmiany wprowadzone na głównym telefonie (np. dodanie nowych biletów)
 Funkcja ta działa dla dowolnej liczby kupionych biletów. Przy większej liczbie biletów aplikacja wygeneruje wiele kodów QR, które będą się wyświetlać w serii.
 
 ### Import biletów z kodu QR:
-![](./.github/images/largeQR.gif)
+<img src="./.github/images/largeQR.gif" alt="" height="500">
 
 # Kolidujące dane
 
@@ -51,7 +51,7 @@ Przy imporcie biletów aplikacja wykryje nowe i już istniejące kody. Spyta o t
 Import za pomocą kodu QR z innej aplkacji zastępuje status istniejących biletów.
 Import z pliku nie wprowadza zmian w statusach już istniejących biletów.
 
-![Screenshot](./.github/images/colision.jpg)
+<img src="./.github/images/colision.jpg" alt="Screenshot" height="500">
 
 ## Uruchamianie
 
