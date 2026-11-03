@@ -58,3 +58,5 @@ Import z pliku nie wprowadza zmian w statusach już istniejących biletów.
 ```
 flutter run
 ```
+
+Made using Claude Code
